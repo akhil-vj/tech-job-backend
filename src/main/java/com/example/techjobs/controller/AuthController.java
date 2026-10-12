@@ -25,8 +25,9 @@ public class AuthController {
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterReq r){
-    if(users.findByEmail(r.email()).isPresent()) throw new ApiException(HttpStatus.CONFLICT,"Email already registered");
-    AppUser u=new AppUser(); u.name=r.name(); u.email=r.email(); u.password=enc.encode(r.password()); users.save(u);
+    String email=r.email().toLowerCase().trim();
+    if(users.findByEmail(email).isPresent()) throw new ApiException(HttpStatus.CONFLICT,"Email already registered");
+    AppUser u=new AppUser(); u.name=r.name(); u.email=email; u.password=enc.encode(r.password()); users.save(u);
     UserProfile p=new UserProfile(); p.userId=u.id; p.jobTitle=r.jobTitle(); p.experienceYears=r.experienceYears();
     p.skills=r.skills()==null?"":String.join(", ",r.skills()); p.qualification=r.qualification();
     p.preferredLocation=r.preferredLocation(); p.remotePreference=Boolean.TRUE.equals(r.remotePreference());
@@ -36,7 +37,7 @@ public class AuthController {
   }
   @PostMapping("/login")
   public Map<String,Object> login(@Valid @RequestBody LoginReq r,HttpServletRequest req,HttpServletResponse res){
-    Authentication a=am.authenticate(new UsernamePasswordAuthenticationToken(r.email(),r.password()));
+    Authentication a=am.authenticate(new UsernamePasswordAuthenticationToken(r.email().toLowerCase().trim(),r.password()));
     SecurityContext ctx=SecurityContextHolder.createEmptyContext(); ctx.setAuthentication(a); SecurityContextHolder.setContext(ctx);
     new HttpSessionSecurityContextRepository().saveContext(ctx,req,res);   // stores the login in the session cookie
 

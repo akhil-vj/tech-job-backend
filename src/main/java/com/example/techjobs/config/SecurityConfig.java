@@ -20,7 +20,7 @@ public class SecurityConfig {
   @Bean PasswordEncoder encoder(){ return new BCryptPasswordEncoder(); }
   @Bean AuthenticationManager authManager(AuthenticationConfiguration c) throws Exception { return c.getAuthenticationManager(); }
   @Bean UserDetailsService uds(UserRepository r){
-    return email->r.findByEmail(email).map(u->User.withUsername(u.email).password(u.password).roles(u.role).build())
+    return email->r.findByEmail(email.toLowerCase().trim()).map(u->User.withUsername(u.email).password(u.password).roles(u.role).build())
       .orElseThrow(()->new UsernameNotFoundException("not found")); }
 
   @Bean SecurityFilterChain chain(HttpSecurity http) throws Exception {
